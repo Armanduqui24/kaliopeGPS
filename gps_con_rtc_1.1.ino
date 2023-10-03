@@ -186,6 +186,7 @@ void loop() {
       //Esto es lo que necesitamos mandar url del archivo que va a recibir los datos en el servidor, luego ?d1= datos 1, los datos gps, estado, y combustible, separados por una ,.
       //Asi deve quedar: url?d1=fecha,hora,latitud,longitud,altitud,velocidad,grados,presicion,satelites,location,estado,combustible&d2=imei
       //http://162.241.93.228/gps_recibe_datos.php?d1=02-10-2023,4:52:00,19.855050,-100.995028,2453,0.5,127,1.10,10,3,1,1&d2=869170032340854
+      //Lo tenemos que trabajar de esta manera por que si concatenamos en una sola liena, saturamos la memoria del arduino y no nos manda la informacion.
       url = "http://162.241.93.228/gps_recibe_datos.php?d1=";
       url += fecha; //+ "," + hora + "," + lattitude + "," + longitude; // + "," + altitud + "," + velocidad + "," + grados + "," + presicion + "," + satelites + "," + location + "," + estado + "," + combustible;
       url += ",";
@@ -213,12 +214,7 @@ void loop() {
       url += "&d2=";
       url += imei;
 
-      //url= "http://162.241.93.228/gps_recibe_datos.php?d1=02-10-2023,4:52:00,19.855050,-100.995028,2453,0.5,127,1.10,10,3,1,1&d2=869170032340854";
-
-      //url= "http://162.241.93.228/gps_recibe_datos.php?d1=02-10-2023,4:52:00," + lattitude + "," + longitude + ",2453,0.5,127,1.10,10,3,1,1&d2=123456789";
-
-      //url = "http://ahmadssd.000webhostapp.com/gpsdata.php?lat=222&lng=222";
-
+      //Mostramos la url, solo es para ver si arduino genero la url bien.
       Serial.println(url);
 
       //Prendemos el GPS
@@ -260,6 +256,9 @@ void loop() {
 
 int8_t sendATcommand(char* ATcommand, char* expected_answer, unsigned int timeout) {
 
+  //Lo que hacemos con esta funcion es enviar un comando al modulo sim 808, nos responde esperamos la respuesta en el tiempo
+  //proporcionado, y corroboramos la respuesta.
+
   uint8_t x = 0, answer = 0;
   char response[100];
   unsigned long previous;
@@ -298,6 +297,10 @@ int8_t sendATcommand(char* ATcommand, char* expected_answer, unsigned int timeou
 }
 
 String leerImeiModulo(String AtComand) {
+  //Se puede mejor, pero por ahora funciona, el modulo sim nos regresa la informacion del imei letra por letra, entonces lo tenemos que recibir
+  //y guardar en una variable C, lo dificil fue limpiar la respuesta por que el gps nos responde con un salto de linea y OK por eso lo limpiamos
+  //con los if, al final conseguimos el imei limpio y lo regresamos.
+
   String respuesa = "";
 
   sim808.flush();
@@ -322,6 +325,7 @@ String leerImeiModulo(String AtComand) {
 }
 
 String leerRespuestaModulo(String AtComand) {
+  //Por ahora, no usamos esta funcion, pero basicamente, nos regresa la respuesta completo del modulo.
   String respuesa = "";
 
   sim808.flush();
